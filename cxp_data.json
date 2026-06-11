@@ -1,4 +1,39 @@
 {
-  "facturas": [],
-  "proveedores": {}
+  "facturas": [
+    {
+      "id": "1781144809642-8i8o1",
+      "nit": "12345679",
+      "nombre": "prueba",
+      "numero": "FV-1234",
+      "fechaFactura": "2026-06-01",
+      "fechaVence": "2026-06-10",
+      "valor": 200000,
+      "pagos": [
+        {
+          "fecha": "2026-06-10",
+          "valor": 200000
+        }
+      ]
+    },
+    {
+      "id": "1781144871293-klyqo",
+      "nit": "987654312",
+      "nombre": "prueba 2",
+      "numero": "FV-4567",
+      "fechaFactura": "2026-06-10",
+      "fechaVence": "2026-06-17",
+      "valor": 5000000,
+      "pagos": []
+    }
+  ],
+  "proveedores": {
+    "12345679": {
+      "nombre": "prueba",
+      "plazoDias": 9
+    },
+    "987654312": {
+      "nombre": "prueba 2",
+      "plazoDias": 7
+    }
+  }
 }
