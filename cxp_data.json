@@ -24,12 +24,26 @@
       "fechaVence": "2026-06-17",
       "valor": 5000000,
       "pagos": []
+    },
+    {
+      "id": "1781145316483-wttln",
+      "nit": "951357846",
+      "nombre": "prueba 3",
+      "numero": "FV-8974",
+      "fechaFactura": "2026-05-15",
+      "fechaVence": "2026-06-01",
+      "valor": 3000000,
+      "pagos": []
     }
   ],
   "proveedores": {
     "12345679": {
       "nombre": "prueba",
       "plazoDias": 9
+    },
+    "951357846": {
+      "nombre": "prueba 3",
+      "plazoDias": 17
     },
     "987654312": {
       "nombre": "prueba 2",
