@@ -1,0 +1,38 @@
+name: Alertas de Cuentas por Pagar
+
+on:
+  schedule:
+    # 12:00 UTC = 7:00 a.m. en Colombia, de lunes a viernes (el cron va en UTC)
+    - cron: "0 12 * * 1-5"
+  workflow_dispatch: {}   # permite ejecutarlo manualmente desde Actions
+
+permissions:
+  contents: read
+
+jobs:
+  alertas:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar el repositorio
+        uses: actions/checkout@v4
+
+      - name: Revisar facturas vencidas y por vencer
+        id: revision
+        run: node scripts/alertas.js
+        env:
+          RUTA_DATOS: cxp_data.json
+          DIAS_AVISO: "5"
+
+      - name: Enviar correo de alerta
+        if: steps.revision.outputs.enviar == 'true'
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          from: Alertas CxP <${{ secrets.MAIL_USERNAME }}>
+          to: ${{ secrets.MAIL_TO }}
+          subject: ${{ steps.revision.outputs.asunto }}
+          html_body: file://correo.html
