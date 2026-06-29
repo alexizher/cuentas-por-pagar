@@ -81,6 +81,11 @@
     -moz-appearance:textfield;appearance:textfield}
   input.abono::-webkit-outer-spin-button,
   input.abono::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  /* Checkbox: anular el estilo global de inputs para que se vea y sea tocable en móvil */
+  input[type=checkbox]{width:20px;min-width:20px;height:20px;padding:0;margin:0;border:0;
+    border-radius:0;background:none;-webkit-appearance:checkbox;appearance:checkbox;
+    accent-color:var(--verde);cursor:pointer;vertical-align:middle}
+  #tablaPagos thead th:first-child,#tablaPagos tbody td:first-child{text-align:center}
 
   .badge{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;
     padding:3px 9px;border-radius:99px;white-space:nowrap}
@@ -284,6 +289,9 @@ function guardar(){ localStorage.setItem(CLAVE, JSON.stringify(datos)); }
 /* ============ Utilidades ============ */
 const fmtCOP = new Intl.NumberFormat('es-CO',{style:'currency',currency:'COP',maximumFractionDigits:0});
 const cop = v => fmtCOP.format(Math.round(v||0));
+const fmtMiles = new Intl.NumberFormat('es-CO',{maximumFractionDigits:0});
+const miles = v => fmtMiles.format(Math.round(v||0));          // 4000000 -> "4.000.000" (solo visual)
+const soloDigitos = s => String(s??'').replace(/\D/g,'');      // "4.000.000" -> "4000000"
 const hoyISO = () => { const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); };
 const fmtFecha = iso => { if(!iso) return ''; const [a,m,d]=iso.split('-'); return d+'/'+m+'/'+a; };
 const diasEntre = (a,b) => Math.round((new Date(b+'T00:00')-new Date(a+'T00:00'))/86400000);
@@ -469,12 +477,18 @@ function pintarTablaPagos(){
       '<td>'+fmtFecha(f.fechaFactura)+'</td><td>'+fmtFecha(f.fechaVence)+'</td>'+
       '<td class="num">'+cop(f.valor)+'</td><td class="num">'+cop(pagado(f))+'</td>'+
       '<td class="num"><strong>'+cop(s)+'</strong></td>'+
-      '<td class="abono-cel"><input type="number" inputmode="decimal" class="abono mono" min="0.01" max="'+s+'" step="0.01" value="'+s.toFixed(2)+'"></td>'+
+      '<td class="abono-cel"><input type="text" inputmode="numeric" class="abono mono" placeholder="0" value="'+miles(s)+'"></td>'+
       '<td>'+badge(f)+'</td></tr>';
   }).join('');
 }
 document.getElementById('chkTodas').addEventListener('change', e=>{
   document.querySelectorAll('#tablaPagos .chkPago').forEach(c=>c.checked = e.target.checked);
+});
+// Formatea el Abono con separador de miles mientras se escribe (el usuario solo digita números)
+document.querySelector('#tablaPagos tbody').addEventListener('input', e=>{
+  if(!e.target.classList.contains('abono')) return;
+  const d = soloDigitos(e.target.value);
+  e.target.value = d ? miles(parseInt(d,10)) : '';
 });
 
 function registrarPagos(){
@@ -486,10 +500,10 @@ function registrarPagos(){
   let total = 0, n = 0;
   for(const tr of filas){
     const f = datos.facturas.find(x=>x.id===tr.dataset.id); if(!f) continue;
-    const monto = parseFloat(tr.querySelector('.abono').value);
+    const monto = parseInt(soloDigitos(tr.querySelector('.abono').value)||'0', 10);
     const s = saldo(f);
     if(!(monto>0)){ aviso('El abono de la factura '+f.numero+' debe ser mayor a 0.'); return; }
-    if(monto > s + 0.005){ aviso('El abono de la factura '+f.numero+' supera su saldo ('+cop(s)+').'); return; }
+    if(monto > Math.round(s)){ aviso('El abono de la factura '+f.numero+' supera su saldo ('+cop(s)+').'); return; }
     f.pagos = f.pagos || [];
     f.pagos.push({ fecha: fechaPago, valor: monto });
     total += monto; n++;
