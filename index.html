@@ -250,9 +250,10 @@
   <div class="tarjeta">
     <h2>Cartera por proveedor</h2>
     <div class="filtros">
-      <div style="flex:1;min-width:200px">
+      <div class="autocompletado" style="flex:1;min-width:200px">
         <label for="cBuscar">Buscar proveedor</label>
-        <input id="cBuscar" placeholder="Nombre o NIT">
+        <input id="cBuscar" placeholder="Nombre o NIT" autocomplete="off">
+        <div class="sugerencias" id="sugCartera"></div>
       </div>
       <div>
         <label for="cEstado">Estado</label>
@@ -516,6 +517,23 @@ function registrarPagos(){
 /* ============ Cartera ============ */
 document.getElementById('cBuscar').addEventListener('input', pintarCartera);
 document.getElementById('cEstado').addEventListener('change', pintarCartera);
+
+// Proveedores que tienen facturas en cartera (para el autocompletado del buscador)
+function proveedoresEnCartera(){
+  const m = {};
+  datos.facturas.forEach(f=>{ if(!m[f.nit]) m[f.nit] = {nit:f.nit, nombre:f.nombre}; });
+  return Object.values(m).sort((a,b)=>a.nombre.localeCompare(b.nombre));
+}
+montarAutocompletado(
+  document.getElementById('cBuscar'),
+  document.getElementById('sugCartera'),
+  q => { const t=q.toLowerCase(); return proveedoresEnCartera().filter(p=> p.nombre.toLowerCase().includes(t) || p.nit.includes(q)); },
+  nit => {
+    const p = proveedoresEnCartera().find(x=>x.nit===nit);
+    document.getElementById('cBuscar').value = p ? p.nombre : nit;
+    pintarCartera();
+  }
+);
 
 function pintarCartera(){
   const q = document.getElementById('cBuscar').value.trim().toLowerCase();
